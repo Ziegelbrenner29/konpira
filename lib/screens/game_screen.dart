@@ -33,9 +33,9 @@ class GameScreen extends ConsumerWidget {
 
     // KI-Modus-Info ans GameProvider weitergeben (für spätere KI-Logik)
     // Wir setzen es einmal beim Start – später erweitern wir den Provider
-    if (gameState.phase == GamePhase.waitingForTapOnBowl && gameState.winner.isEmpty) {
-      ref.read(gameProvider.notifier).setGameMode(isVsKI);
-    }
+    //if (gameState.phase == GamePhase.waitingForTapOnBowl && gameState.winner.isEmpty) {
+    //  ref.read(gameProvider.notifier).setGameMode(isVsKI);
+    //}
 
     return Scaffold(
       body: GestureDetector(

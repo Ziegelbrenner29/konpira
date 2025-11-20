@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  String? _selectedVariant; // null = Auswahl, sonst 'konpira' oder 'matchapon'
+  String? _selectedVariant;
   late AnimationController _splitController;
   late Animation<double> _splitAnimation;
 
@@ -37,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         builder: (_) => GameScreen(variant: _selectedVariant!, isVsKI: isVsKI),
       ),
     );
-    // Zurück zum Normalzustand
     _splitController.reverse().then((_) => setState(() => _selectedVariant = null));
   }
 
@@ -55,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: SafeArea(
           child: Stack(
             children: [
-              // Titel
               const Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
@@ -67,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // Varianten-Buttons mit Split-Animation
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -79,19 +76,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // Footer mit Keisen-Icons – jetzt const und mit korrekten Namen
+              // Footer – komplett ohne const (Screens haben keinen const-Constructor)
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 40),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      _FooterIcon(icon: Icons.settings, screen: SettingsScreen()),
-                      SizedBox(width: 40),
-                      _FooterIcon(icon: Icons.info_outline, screen: InfoScreen()),
-                      SizedBox(width: 40),
-                      _FooterIcon(icon: Icons.favorite_outline, screen: CreditsScreen()),
+                    children: [
+                      _footerIcon(Icons.settings, SettingsScreen()),
+                      const SizedBox(width: 40),
+                      _footerIcon(Icons.info_outline, InfoScreen()),
+                      const SizedBox(width: 40),
+                      _footerIcon(Icons.favorite_outline, CreditsScreen()),
                     ],
                   ),
                 ),
@@ -133,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         color: const Color(0xFFBC9F7A),
         borderRadius: BorderRadius.circular(40),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 6))],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 6))],
       ),
       child: Text(title, style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.w600)),
     );
@@ -164,9 +161,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _footerIcon(IconData icon, VoidCallback onTap) {
+  Widget _footerIcon(IconData icon, Widget screen) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => screen)),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
@@ -177,28 +174,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-
-    class _FooterIcon extends StatelessWidget {
-  final IconData icon;
-  final Widget screen;
-
-  const _FooterIcon({required this.icon, required this.screen});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => screen)),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Color(0x33BC9F7A),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 32, color: Color(0xFF4A3728)),
-      ),
-    );
-  }
-}
 
   @override
   void dispose() {

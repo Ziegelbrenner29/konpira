@@ -157,6 +157,13 @@ class GameNotifier extends StateNotifier<MatchaGameState> {
     _lastBeatTime = null;
   }
 
+  bool _isVsKI = false;  // Standard: Hot-Seat
+
+  void setGameMode(bool isVsKI) {
+    _isVsKI = isVsKI;
+    // Später hier KI initialisieren
+  }
+
   @override
   void dispose() {
     _sfxPlayer.dispose();
