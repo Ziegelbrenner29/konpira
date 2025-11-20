@@ -53,10 +53,26 @@ flutter:
   #     fonts:
   #       - asset: assets/fonts/NotoSansJP-Regular.ttf
 
-# Splash Screen (optional – später aktivieren)
-# flutter_native_splash:
-#   color: "#F5F0E1"
-#   image: assets/images/chawan_splash.png
+# ====== SPLASH SCREEN – jetzt mit deinem eigenen Bild! ✨======
+# ====== SPLASH SCREEN – jetzt 100% korrekt und zen! ✨======
+# ====== SPLASH SCREEN – jetzt mit deinem matcha_splash.png, full & zen! ✨======
+flutter_native_splash:
+  color: "#F5F0E1"                       # cremiges Beige (unser HomeScreen-Start)
+  image: assets/images/matcha_splash.png # dein eigenes Bild, zentriert
+
+  # Fullscreen-Modus: Bild füllt alles (kein App-Icon mehr, kein Statusbar-Overlay)
+  fullscreen: true                       
+
+  # Android (vor 12): Bild fillt den Screen
+  android_gravity: fill                  
+
+  # Android 12+
+  android_12:
+    image: assets/images/matcha_splash.png
+    color: "#F5F0E1"
+
+  # iOS: Content-Mode fill (seit neueren Versionen der richtige Weg)
+  ios_content_mode: scaleToFill          
 
 # ====== APP ICON KONFIG – das macht den goldenen Zauber! ✨======
 flutter_launcher_icons:
