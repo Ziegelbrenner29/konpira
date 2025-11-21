@@ -14,18 +14,23 @@ class GameScreen extends ConsumerStatefulWidget {
 
 class _GameScreenState extends ConsumerState<GameScreen> {
   String debugText = 'Bereit – teste Gesten!';
-  double lastContactSize = 0.0;  // ✅ double statt Size!
+  double lastContactSize = 0.0;
+
+  String get tableAsset => switch (ref.watch(settingsProvider).theme) {
+        AppTheme.washiClassic  => 'assets/images/themes/table_washi.jpg',
+        AppTheme.matchaGarden  => 'assets/images/themes/table_garden.jpg',
+        AppTheme.goldenTemple  => 'assets/images/themes/table_temple.jpg',
+      };
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final theme = ref.watch(settingsProvider).theme;
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(theme.paperAsset),
+            image: AssetImage(ref.watch(settingsProvider).theme.paperAsset),
             fit: BoxFit.cover,
             opacity: 0.6,
           ),
@@ -37,79 +42,52 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ),
         child: Listener(
           onPointerDown: (event) {
-            lastContactSize = event.size;  // ✅ Jetzt passt's
-            debugText = 'Pointer Down\nFläche: ${lastContactSize.round()} px²\nFinger: 1';
+            lastContactSize = event.size;
             setState(() {});
           },
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapDown: (d) {
-              debugText = 'Single Tap\nFläche ≈ ${lastContactSize.round()} px²\nZone: ${_getZone(d.localPosition, size)}';
-              setState(() {});
-            },
-            onDoubleTapDown: (d) {
-              debugText = 'Double Tap – DON!\nFläche ≈ ${lastContactSize.round()} px²';
-              setState(() {});
-            },
-            onLongPressStart: (d) {
-              debugText = 'LongPress Start\nSchale hochheben';
-              setState(() {});
-            },
-            onScaleStart: (_) {
-              debugText = 'Pinch Start\nSchale hochheben';
-              setState(() {});
-            },
-            onScaleUpdate: (d) {
-              final fakeOut = d.scale > 1.1 ? 'Fake-Out!' : '';
-              debugText = 'Pinch Update\nScale: ${d.scale.toStringAsFixed(2)}\n$fakeOut';
-              setState(() {});
-            },
-            onScaleEnd: (_) {
-              debugText = 'Pinch End\nEhrlich abstellen';
-              setState(() {});
-            },
-            child: Stack(
-              children: [
-                // Nur die Chawan – groß & mittig
-                Center(
-                  child: ChawanWidget(state: const GameState(
-                    phase: GamePhase.waitingForTapOnBowl,
-                    isPlayer1Turn: true,
-                    bowlOwner: BowlOwner.none,
-                    fakeCount: 0,
-                    winner: '',
-                  )),
+          child: Stack(
+            children: [
+              // ★★★★★ TISCH – 100% BREITE, EXAKT MITTIG (Mitte = Mitte der Schale) ★★★★★
+              Center(
+                child: Image.asset(
+                  tableAsset,
+                  width: size.width,           // voller Bildschirm links/rechts
+                  fit: BoxFit.fitWidth,        // kein Verzerren, nur skalieren
+                  alignment: Alignment.center,  // Mittelpunkt des Bildes = Mittelpunkt des Screens
                 ),
+              ),
 
-                // Debug-Overlay
-                Positioned(
-                  top: 100,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      debugText,
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
-                      textAlign: TextAlign.right,
-                    ),
+              // ★★★★★ CHAWAN – steht perfekt auf dem Tischmittelpunkt ★★★★★
+              const Center(
+                child: ChawanWidget(state: GameState(
+                  phase: GamePhase.waitingForTapOnBowl,
+                  isPlayer1Turn: true,
+                  bowlOwner: BowlOwner.none,
+                  fakeCount: 0,
+                  winner: '',
+                )),
+              ),
+
+              // Debug-Overlay (unten rechts)
+              Positioned(
+                bottom: 80,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Kontaktfläche: ${lastContactSize.round()} px²',
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
-  }
-
-  String _getZone(Offset pos, Size size) {
-    final y = pos.dy / size.height;
-    if (y < 0.3) return 'Oberer Bereich';
-    if (y > 0.7) return 'Unterer Bereich';
-    return 'Mitte (Schale)';
   }
 }

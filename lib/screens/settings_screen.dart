@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:konpira/providers/settings_provider.dart';
 import 'package:konpira/providers/game_provider.dart';
+import 'package:konpira/providers/bgm_provider.dart'; 
 
 final _testMusicPlayingProvider = StateProvider<bool>((ref) => false);
 
@@ -12,16 +13,26 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
+
+    // ★★★★★ LIVE LAUTSTÄRKE FÜR BGM – ECHTZEIT! ★★★★★
+    ref.listen<double>(settingsProvider.select((s) => s.masterVolume), (previous, next) {
+      final bgmVol = ref.read(settingsProvider).bgmVolume;
+      ref.read(bgmProvider).updateVolume(next * bgmVol);
+    });
+
+    ref.listen<double>(settingsProvider.select((s) => s.bgmVolume), (previous, next) {
+      final masterVol = ref.read(settingsProvider).masterVolume;
+      ref.read(bgmProvider).updateVolume(masterVol * next);
+    });
+    
     final notifier = ref.read(settingsProvider.notifier);
     final isPlaying = ref.watch(_testMusicPlayingProvider);
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          // Wird aufgerufen, wenn Settings verlassen wird (Back-Button, pop, etc.)
           ref.read(gameProvider.notifier).stopMusic();
           ref.read(_testMusicPlayingProvider.notifier).state = false;
-          debugPrint('🎶 Settings verlassen – Gesang gestoppt + Button zurückgesetzt');
         }
       },
       child: Scaffold(
@@ -46,146 +57,170 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionTitle('Audio'),
-                  _bambooSlider(
-                    label: 'Master Lautstärke',
-                    value: settings.masterVolume,
-                    onChanged: notifier.updateMasterVolume,
-                  ),
-                  _bambooSlider(
-                    label: 'Hintergrundmusik',
-                    value: settings.bgmVolume,
-                    onChanged: notifier.updateBgmVolume,
-                  ),
-
-                  // <<< Gesang Test/Stop-Button – perfekt Toggle + Auto-Stop!
-                  const SizedBox(height: 16),
-                  const Text('Gesang (Konpira fune fune)', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
-                  const SizedBox(height: 12),
-                  Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isPlaying ? Colors.red.shade700 : Colors.green.shade700,
-                        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 18),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      ),
-                      onPressed: () async {
-                        final newState = !isPlaying;
-                        ref.read(_testMusicPlayingProvider.notifier).state = newState;
-                        if (newState) {
-                          await ref.read(gameProvider.notifier).startMusic('konpira');
-                        } else {
-                          ref.read(gameProvider.notifier).stopMusic();
-                        }
-                      },
-                      child: Text(
-                        isPlaying ? 'Stop Gesang' : 'Test Konpira Gesang',
-                        style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
+            child: Stack(
+              children: [
+                // ★★★★★ DER WUNDERSCHÖNE TITEL GANZ OBEN – WIE AUF HOME! ★★★★★
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 0), // etwas Abstand zum AppBar
+                    child: Image.asset(
+                      'assets/images/konpira_title.png',
+                      height: 80,
+                      fit: BoxFit.contain,
                     ),
                   ),
+                ),
 
-                  _bambooSlider(
-                    label: 'Soundeffekte (tok/pon/DON!)',
-                    value: settings.sfxVolume,
-                    onChanged: notifier.updateSfxVolume,
-                  ),
-                  _bambooSliderInt(
-                    label: 'Haptics Intensität',
-                    value: settings.hapticsIntensity.toDouble(),
-                    min: 0,
-                    max: 3,
-                    divisions: 3,
-                    labels: const ['Aus', 'Leicht', 'Mittel', 'Stark'],
-                    onChanged: (v) => notifier.updateHapticsIntensity(v.round()),
-                  ),
-
-                  const SizedBox(height: 32),
-                  _sectionTitle('Gameplay'),
-                  _bambooSliderInt(
-                    label: 'Timing-Fenster (±ms)',
-                    value: settings.timingWindowMs.toDouble(),
-                    min: 50,
-                    max: 120,
-                    divisions: 7,
-                    onChanged: (v) => notifier.updateTimingWindowMs(v.round()),
-                  ),
-                  _segmentedFakes(notifier, settings.maxFakesInARow),
-                  _aiDifficultyPlaceholder(settings.aiDifficulty),
-
-                  const SizedBox(height: 32),
-                  _sectionTitle('Visuals'),
-
-                  // <<< Theme-Wechsler mit großen Buttons + Kanji + Romaji + Icon
-                  ...AppTheme.values.map((theme) {
-                    final isSelected = settings.theme == theme;
-                    final icon = switch (theme) {
-                      AppTheme.washiClassic => Icons.auto_stories,
-                      AppTheme.matchaGarden => Icons.local_florist,
-                      AppTheme.goldenTemple => Icons.account_balance,
-                    };
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected ? const Color(0xFF8B9F7A) : Colors.transparent,
-                          foregroundColor: isSelected ? Colors.white : const Color(0xFF4A3728),
-                          elevation: isSelected ? 8 : 2,
-                          shadowColor: isSelected ? Colors.green.shade900 : Colors.black26,
-                          side: BorderSide(color: const Color(0xFF8B9F7A), width: isSelected ? 3 : 1),
-                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                // Der Rest scrollt darunter – perfekt!
+                Padding(
+                  padding: const EdgeInsets.only(top: 80), // Platz für den Titel lassen
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _sectionTitle('Audio'),
+                        _bambooSlider(
+                          label: 'Master Lautstärke',
+                          value: settings.masterVolume,
+                          onChanged: notifier.updateMasterVolume,
                         ),
-                        onPressed: () => notifier.setTheme(theme),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(icon, size: 36, color: isSelected ? Colors.white : const Color(0xFF8B9F7A)),
-                            const SizedBox(width: 20),
-                            Column(
-                              children: [
-                                Text(
-                                  theme.displayName.split(' ').first,
-                                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : const Color(0xFF4A3728)),
-                                ),
-                                Text(
-                                  theme.displayName.split(' ').last,
-                                  style: TextStyle(fontSize: 16, color: isSelected ? Colors.white70 : const Color(0xFF4A3728)),
-                                ),
-                              ],
+                        _bambooSlider(
+                          label: 'Hintergrundmusik',
+                          value: settings.bgmVolume,
+                          onChanged: notifier.updateBgmVolume,
+                        ),
+
+                        // Gesang Test-Button
+                        const SizedBox(height: 16),
+                        const Text('Gesang (Konpira fune fune)', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
+                        const SizedBox(height: 12),
+                        Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isPlaying ? Colors.red.shade700 : Colors.green.shade700,
+                              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 18),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             ),
-                            if (isSelected) ...[
-                              const SizedBox(width: 20),
-                              const Icon(Icons.check_circle, color: Colors.white, size: 36),
-                            ],
-                          ],
+                            onPressed: () async {
+                              final newState = !isPlaying;
+                              ref.read(_testMusicPlayingProvider.notifier).state = newState;
+                              if (newState) {
+                                await ref.read(gameProvider.notifier).startMusic('konpira');
+                              } else {
+                                ref.read(gameProvider.notifier).stopMusic();
+                              }
+                            },
+                            child: Text(
+                              isPlaying ? 'Stop Gesang' : 'Test Konpira Gesang',
+                              style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
-                      ),
-                    );
-                  }),
 
-                  _bambooSlider(
-                    label: 'Animations-Intensität',
-                    value: settings.animationIntensity,
-                    onChanged: notifier.updateAnimationIntensity,
-                  ),
+                        _bambooSlider(
+                          label: 'Soundeffekte (tok/pon/DON!)',
+                          value: settings.sfxVolume,
+                          onChanged: notifier.updateSfxVolume,
+                        ),
+                        _bambooSliderInt(
+                          label: 'Haptics Intensität',
+                          value: settings.hapticsIntensity.toDouble(),
+                          min: 0,
+                          max: 3,
+                          divisions: 3,
+                          labels: const ['Aus', 'Leicht', 'Mittel', 'Stark'],
+                          onChanged: (v) => notifier.updateHapticsIntensity(v.round()),
+                        ),
 
-                  const SizedBox(height: 48),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () => _showResetDialog(context),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade300),
-                      child: const Text('Highscores zurücksetzen', style: TextStyle(color: Colors.white)),
+                        const SizedBox(height: 32),
+                        _sectionTitle('Gameplay'),
+                        _bambooSliderInt(
+                          label: 'Timing-Fenster (±ms)',
+                          value: settings.timingWindowMs.toDouble(),
+                          min: 50,
+                          max: 120,
+                          divisions: 7,
+                          onChanged: (v) => notifier.updateTimingWindowMs(v.round()),
+                        ),
+                        _segmentedFakes(notifier, settings.maxFakesInARow),
+                        _aiDifficultyPlaceholder(settings.aiDifficulty),
+
+                        const SizedBox(height: 32),
+                        _sectionTitle('Visuals'),
+
+                        // Theme-Wechsler (unverändert – perfekt!)
+                        ...AppTheme.values.map((theme) {
+                          final isSelected = settings.theme == theme;
+                          final icon = switch (theme) {
+                            AppTheme.washiClassic => Icons.auto_stories,
+                            AppTheme.matchaGarden => Icons.local_florist,
+                            AppTheme.goldenTemple => Icons.account_balance,
+                          };
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isSelected ? const Color(0xFF8B9F7A) : Colors.transparent,
+                                foregroundColor: isSelected ? Colors.white : const Color(0xFF4A3728),
+                                elevation: isSelected ? 8 : 2,
+                                shadowColor: isSelected ? Colors.green.shade900 : Colors.black26,
+                                side: BorderSide(color: const Color(0xFF8B9F7A), width: isSelected ? 3 : 1),
+                                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                              ),
+                              onPressed: () {
+                                notifier.setTheme(theme);
+                                ref.read(bgmProvider).updateThemeAndPlayIfAllowed();
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(icon, size: 36, color: isSelected ? Colors.white : const Color(0xFF8B9F7A)),
+                                  const SizedBox(width: 20),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        theme.displayName.split(' ').first,
+                                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : const Color(0xFF4A3728)),
+                                      ),
+                                      Text(
+                                        theme.displayName.split(' ').last,
+                                        style: TextStyle(fontSize: 16, color: isSelected ? Colors.white70 : const Color(0xFF4A3728)),
+                                      ),
+                                    ],
+                                  ),
+                                  if (isSelected) ...[
+                                    const SizedBox(width: 20),
+                                    const Icon(Icons.check_circle, color: Colors.white, size: 36),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+
+                        _bambooSlider(
+                          label: 'Animations-Intensität',
+                          value: settings.animationIntensity,
+                          onChanged: notifier.updateAnimationIntensity,
+                        ),
+
+                        const SizedBox(height: 48),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () => _showResetDialog(context),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade300),
+                            child: const Text('Highscores zurücksetzen', style: TextStyle(color: Colors.white)),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

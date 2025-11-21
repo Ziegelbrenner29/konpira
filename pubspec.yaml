@@ -22,6 +22,7 @@ dependencies:
 
   # Wunderschöne Animationen (Chawan fliegen, Fake-Out, Wellen)
   rive: ^0.13.9
+  shared_preferences: ^2.5.3
 
   # Optional: In-App-Purchase für 1,99 € Einmalkauf (später aktivieren)
   # in_app_purchase: ^3.2.0
@@ -41,6 +42,7 @@ flutter:
 
   assets:
     - assets/audio/
+    - assets/audio/bgm/
     - assets/images/          
     - assets/rive/
     - assets/icons/
@@ -60,12 +62,12 @@ flutter:
 # ====== SPLASH SCREEN – Beige Zen mit Tempel-Siegel! ✨======
 flutter_native_splash:
   color: "#F5F0E1"                         # Beige Hintergrund
-  image: assets/images/konpira_splash.png  # Dein Tempel-PNG
+  image: assets/icons/konpira_icon_2.png  # Dein Tempel-PNG
   fullscreen: true                         # Kein Statusbar-Blitz
   android_gravity: center                  # Zentriert dein PNG perfekt!
   # branding: ...                          # <<< KOMPLETT WEG – kein Branding!
   android_12:
-    image: assets/images/konpira_splash.png
+    image: assets/icons/konpira_icon_2.png
     color: "#F5F0E1"
     # branding: ...                        # <<< AUCH HIER WEG!
   ios_content_mode: scaleToFill

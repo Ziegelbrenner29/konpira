@@ -5,7 +5,7 @@ import 'package:konpira/screens/game_screen.dart';
 import 'package:konpira/screens/settings_screen.dart';
 import 'package:konpira/screens/info_screen.dart';
 import 'package:konpira/screens/credits_screen.dart';
-import 'package:konpira/providers/settings_provider.dart';  // <<< NEU: für theme.paperAsset!
+import 'package:konpira/providers/settings_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,9 +35,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _startGame(BuildContext context, bool isVsKI) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const GameScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const GameScreen()),
     );
     _splitController.reverse().then((_) => setState(() => _selectedVariant = null));
   }
@@ -45,13 +43,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      final theme = ref.watch(settingsProvider).theme;  // <<< LIVE THEME!
+      final theme = ref.watch(settingsProvider).theme;
 
       return Scaffold(
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(theme.paperAsset),  // <<< Paper-Textur aus Theme!
+              image: AssetImage(theme.paperAsset),
               fit: BoxFit.cover,
               opacity: 0.6,
             ),
@@ -64,46 +62,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: SafeArea(
             child: Stack(
               children: [
+                // ★★★★★ NEUER EINHEITLICHER TITEL – GENAU WIE AUF SETTINGS! ★★★★★
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 0),
-                    // <<< NEUER TITEL – live aus Theme (später, wenn du willst) oder direkt:
+                    padding: const EdgeInsets.only(top: 56), // gleicher Abstand wie Settings
                     child: Image.asset(
                       'assets/images/konpira_title.png',
-                      height: 180,  // passt perfekt – teste ggf. 160–200
+                      height: 80,        // etwas kleiner – wirkt edler
                       fit: BoxFit.contain,
                     ),
                   ),
                 ),
 
-                Center(
+                // Hauptinhalt etwas nach unten schieben, damit Titel Platz hat
+                Padding(
+                  padding: const EdgeInsets.only(top: 180), // Platz für Titel lassen
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      const Spacer(flex: 2),
+
+                      // Varianten-Buttons
                       _buildVariantButton('Konpira fune fune', 'konpira'),
                       const SizedBox(height: 40),
                       _buildVariantButton('Matcha pon!', 'matchapon'),
-                      // Test-Button entfernt – ist jetzt in Settings!
-                    ],
-                  ),
-                ),
 
-                // Footer
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 40),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        _FooterIcon(icon: Icons.settings, screen: SettingsScreen()),
-                        SizedBox(width: 40),
-                        _FooterIcon(icon: Icons.info_outline, screen: InfoScreen()),
-                        SizedBox(width: 40),
-                        _FooterIcon(icon: Icons.favorite_outline, screen: CreditsScreen()),
-                      ],
-                    ),
+                      const Spacer(flex: 3),
+
+                      // Footer
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 40),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            _FooterIcon(icon: Icons.settings, screen: SettingsScreen()),
+                            SizedBox(width: 40),
+                            _FooterIcon(icon: Icons.info_outline, screen: InfoScreen()),
+                            SizedBox(width: 40),
+                            _FooterIcon(icon: Icons.favorite_outline, screen: CreditsScreen()),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -174,11 +174,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -193,7 +189,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-// Private Footer-Icon Widget
 class _FooterIcon extends StatelessWidget {
   final IconData icon;
   final Widget screen;

@@ -34,26 +34,26 @@ class InfoScreen extends ConsumerWidget {
         child: SafeArea(
           child: Stack(
             children: [
-              // Titel-PNG ganz oben (wie auf HomeScreen/Credits)
-              Positioned(
-                top: -56,
-                left: 0,
-                right: 0,
-                child: Image.asset(
-                  'assets/images/konpira_title.png',
-                  height: 180,
-                  fit: BoxFit.contain,
+              // ★★★★★ EINHEITLICHER TITEL – GENAU WIE AUF SETTINGS & HOME! ★★★★★
+              Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 0),
+                  child: Image.asset(
+                    'assets/images/konpira_title.png',
+                    height: 80,        // kleiner + edler – passt perfekt zu Settings
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
 
-              // Inhalt mit ScrollView
+              // Inhalt nach unten schieben – Titel hat Platz
               Padding(
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.only(top: 80), // exakt wie Settings & Home
                 child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Column(
                     children: [
-                      const SizedBox(height: 160), // Platz für Titel-PNG
-
                       // ================== SPIELREGELN ==================
                       const Text('Spielregeln', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF4A3728))),
                       const SizedBox(height: 16),

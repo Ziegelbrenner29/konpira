@@ -1,5 +1,6 @@
 // lib/providers/settings_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:konpira/services/persistence_service.dart';
 
 enum AppTheme {
   washiClassic,
@@ -11,16 +12,16 @@ extension AppThemeExtension on AppTheme {
   String get paperAsset => 'assets/images/themes/paper_${index + 1}.png';
   String get bambooAsset => 'assets/images/themes/bamboo_track_${index + 1}.png';
   String get chawanAsset => switch (this) {
-    AppTheme.washiClassic => 'assets/images/themes/chawan_beige.png',
-    AppTheme.matchaGarden => 'assets/images/themes/chawan_green.png',
-    AppTheme.goldenTemple => 'assets/images/themes/chawan_black.png',
-  };
+        AppTheme.washiClassic => 'assets/images/themes/chawan_black.png',
+        AppTheme.matchaGarden => 'assets/images/themes/chawan_green.png',
+        AppTheme.goldenTemple => 'assets/images/themes/chawan_beige.png',
+      };
 
   String get displayName => switch (this) {
-    AppTheme.washiClassic => '和紙古典 Washi Classic',
-    AppTheme.matchaGarden => '抹茶庭園 Matcha Garden',
-    AppTheme.goldenTemple => '金寺 Golden Temple',
-  };
+        AppTheme.washiClassic => '和紙古典 Washi Classic',
+        AppTheme.matchaGarden => '抹茶庭園 Matcha Garden',
+        AppTheme.goldenTemple => '金寺 Golden Temple',
+      };
 }
 
 class AppSettings {
@@ -75,22 +76,37 @@ class AppSettings {
   }
 }
 
+// ★★★★★ DER EINE UND EINZIGE NOTIFIER – ALLES IST PERSISTENT! ★★★★★
+class SettingsNotifier extends StateNotifier<AppSettings> {
+  SettingsNotifier(AppSettings initial) : super(initial);
+
+  // Lädt ALLE gespeicherten Einstellungen beim App-Start
+  static Future<SettingsNotifier> create() async {
+    final saved = await PersistenceService.loadAll();
+    return SettingsNotifier(saved);
+  }
+
+  // Alle Änderungen werden sofort gespeichert
+  void _save() => PersistenceService.saveAll(state);
+
+  void updateMasterVolume(double v) { state = state.copyWith(masterVolume: v); _save(); }
+  void updateBgmVolume(double v)     { state = state.copyWith(bgmVolume: v); _save(); }
+  void updateVoiceEnabled(bool v)    { state = state.copyWith(voiceEnabled: v); _save(); }
+  void updateSfxVolume(double v)     { state = state.copyWith(sfxVolume: v); _save(); }
+  void updateHapticsIntensity(int v) { state = state.copyWith(hapticsIntensity: v); _save(); }
+  void updateTimingWindowMs(int v)   { state = state.copyWith(timingWindowMs: v); _save(); }
+  void updateMaxFakesInARow(int v)   { state = state.copyWith(maxFakesInARow: v); _save(); }
+  void updateAnimationIntensity(double v) { state = state.copyWith(animationIntensity: v); _save(); }
+
+  void setTheme(AppTheme theme) {
+    state = state.copyWith(theme: theme);
+    _save();
+  }
+}
+
+// Provider wird in main.dart überschrieben → alles perfekt!
 final settingsProvider = StateNotifierProvider<SettingsNotifier, AppSettings>((ref) {
-  return SettingsNotifier();
+  throw UnimplementedError('Wird in main.dart mit async create überschrieben');
 });
 
 final _testMusicPlayingProvider = StateProvider<bool>((ref) => false);
-
-class SettingsNotifier extends StateNotifier<AppSettings> {
-  SettingsNotifier() : super(const AppSettings());
-
-  void updateMasterVolume(double v) => state = state.copyWith(masterVolume: v);
-  void updateBgmVolume(double v) => state = state.copyWith(bgmVolume: v);
-  void updateVoiceEnabled(bool v) => state = state.copyWith(voiceEnabled: v);
-  void updateSfxVolume(double v) => state = state.copyWith(sfxVolume: v);
-  void updateHapticsIntensity(int v) => state = state.copyWith(hapticsIntensity: v);
-  void updateTimingWindowMs(int v) => state = state.copyWith(timingWindowMs: v);
-  void updateMaxFakesInARow(int v) => state = state.copyWith(maxFakesInARow: v);
-  void updateAnimationIntensity(double v) => state = state.copyWith(animationIntensity: v);
-  void setTheme(AppTheme theme) => state = state.copyWith(theme: theme);
-}
