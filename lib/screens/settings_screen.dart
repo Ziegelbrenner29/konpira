@@ -1,7 +1,7 @@
 // lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:matcha/providers/settings_provider.dart';   // <<< DAS FEHLTE!
+import 'package:matcha/providers/settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -20,13 +20,13 @@ class SettingsScreen extends ConsumerWidget {
         centerTitle: true,
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/paper_texture.png'),
+            image: AssetImage(settings.theme.paperAsset),
             fit: BoxFit.cover,
             opacity: 0.6,
           ),
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [Color(0xFFF5F0E1), Color(0xFFE8DAB2)],
@@ -50,7 +50,7 @@ class SettingsScreen extends ConsumerWidget {
                   onChanged: notifier.updateBgmVolume,
                 ),
                 _switchTile(
-                  title: 'Gesang (Konpira / Matcha pon!)',
+                  title: 'Gesang (Konpira fune fune)',
                   value: settings.voiceEnabled,
                   onChanged: notifier.updateVoiceEnabled,
                 ),
@@ -84,6 +84,38 @@ class SettingsScreen extends ConsumerWidget {
 
                 const SizedBox(height: 32),
                 _sectionTitle('Visuals'),
+                // <<< NEU: Theme-Wechsler – funktioniert 100% in Flutter 3.24+!
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Theme', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
+                      const SizedBox(height: 12),
+                      SegmentedButton<AppTheme>(
+                        selectedIcon: const Icon(Icons.check, color: Colors.white),
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return const Color(0xFF8B9F7A); // ausgewählt: Zen-Grün
+                            }
+                            return Colors.white.withOpacity(0.3); // normal
+                          }),
+                          foregroundColor: WidgetStateProperty.all(Colors.white),
+                          side: WidgetStateProperty.all(const BorderSide(color: Color(0xFF8B9F7A), width: 2)),
+                        ),
+                        segments: AppTheme.values.map((t) => ButtonSegment(
+                          value: t,
+                          label: Text(t.displayName, style: const TextStyle(fontSize: 14)),
+                        )).toList(),
+                        selected: {settings.theme},
+                        onSelectionChanged: (selection) {
+                          notifier.setTheme(selection.first);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
                 _bambooSlider(
                   label: 'Animations-Intensität',
                   value: settings.animationIntensity,
@@ -116,11 +148,7 @@ class SettingsScreen extends ConsumerWidget {
     required double value,
     required void Function(double) onChanged,
   }) =>
-      _SliderTile(
-        label: label,
-        value: value,
-        onChanged: onChanged,
-      );
+      _SliderTile(label: label, value: value, onChanged: onChanged);
 
   Widget _bambooSliderInt({
     required String label,
@@ -183,7 +211,7 @@ class SettingsScreen extends ConsumerWidget {
           max: 5,
           divisions: 4,
           labels: const ['Zen-Schüler', 'Schüler', 'Meister', 'Großmeister', 'Unmöglich'],
-          onChanged: (_) {}, // disabled
+          onChanged: (_) {},
         ),
       );
 
@@ -202,7 +230,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-// Custom Bamboo-Slider Widget (minimalistisch, aber wunderschön)
+// Custom Bamboo-Slider Widget
 class _SliderTile extends StatelessWidget {
   final String label;
   final double value;
@@ -234,7 +262,7 @@ class _SliderTile extends StatelessWidget {
           Stack(
             alignment: Alignment.centerLeft,
             children: [
-              Container(height: 12, color: const Color(0xFF8B9F7A).withOpacity(0.3)), // Bambus-Track-Hintergrund
+              Container(height: 12, color: const Color(0xFF8B9F7A).withOpacity(0.3)),
               SliderTheme(
                 data: SliderThemeData(
                   trackHeight: 12,

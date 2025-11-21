@@ -1,12 +1,12 @@
 // lib/widgets/chawan_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:matcha/models/game_state.dart';  // GameState statt MatchaGameState
-import 'package:matcha/providers/game_provider.dart';
+import 'package:matcha/models/game_state.dart';
+import 'package:matcha/providers/settings_provider.dart';  // für theme.chawanAsset
 import 'package:matcha/core/constants.dart';
 
 class ChawanWidget extends ConsumerWidget {
-  final GameState state;  // <<< HIER WAR'S! MatchaGameState → GameState
+  final GameState state;
 
   const ChawanWidget({required this.state, super.key});
 
@@ -44,6 +44,9 @@ class ChawanWidget extends ConsumerWidget {
         break;
     }
 
+    // <<< LIVE WECHSEL: Chawan aus themes-Ordner je nach Theme!
+    final chawanAsset = ref.watch(settingsProvider.select((s) => s.theme.chawanAsset));
+
     return AnimatedPositioned(
       duration: state.phase == GamePhase.bowlTakenWaitingForOwnerDecision && state.fakeCount > 0
           ? fakeTouchDuration
@@ -58,7 +61,7 @@ class ChawanWidget extends ConsumerWidget {
           turns: rotation / 360,
           duration: const Duration(milliseconds: 400),
           child: Image.asset(
-            'assets/images/chawan.png',
+            chawanAsset,
             width: bowlSize,
             height: bowlSize,
             fit: BoxFit.contain,
