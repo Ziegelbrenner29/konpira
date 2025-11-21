@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _startGame(BuildContext context, bool isVsKI) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => GameScreen(variant: _selectedVariant!, isVsKI: isVsKI),
+        builder: (_) => const GameScreen(),
       ),
     );
     _splitController.reverse().then((_) => setState(() => _selectedVariant = null));
@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 60),
+                    padding: const EdgeInsets.only(top: 0),
                     // <<< NEUER TITEL – live aus Theme (später, wenn du willst) oder direkt:
                     child: Image.asset(
                       'assets/images/konpira_title.png',

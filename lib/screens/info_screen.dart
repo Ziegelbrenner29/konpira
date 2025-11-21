@@ -15,7 +15,7 @@ class InfoScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Teezeremonie Info', style: TextStyle(color: Color(0xFF4A3728), fontSize: 28)),
+        title: const Text('Spielregeln & Infos', style: TextStyle(color: Color(0xFF4A3728), fontSize: 28)),
         centerTitle: true,
       ),
       body: Container(
@@ -32,29 +32,78 @@ class InfoScreen extends ConsumerWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              children: [
-                const SizedBox(height: 80), // Platz für AppBar
-                Text(
-                  'Konpira fune fune',
-                  style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFF4A3728)),
-                  textAlign: TextAlign.center,
+          child: Stack(
+            children: [
+              // Titel-PNG ganz oben (wie auf HomeScreen/Credits)
+              Positioned(
+                top: -56,
+                left: 0,
+                right: 0,
+                child: Image.asset(
+                  'assets/images/konpira_title.png',
+                  height: 180,
+                  fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Ein traditionelles japanisches Trinkspiel aus Shikoku, basierend auf dem Pilgerlied zum Kotohira-gū-Schrein (Konpira-san). '
-                  'Zwei Spieler klopfen abwechselnd auf Tisch oder Schale im Rhythmus des Gesangs – wer das Timing verpasst oder falsch klopft, verliert!\n\n'
-                  'In Matcha: Ein-Finger-Tap = tok/pon, Zwei-Finger-Double-Tap = DON!, Pinch/LongPress = Schale hochheben + Fake-Out möglich (max. 2x).\n\n'
-                  'Der Gewinner trinkt die Schale Matcha leer – oder zwingt den Verlierer dazu! 🍵\n\n'
-                  '„Hoi-hoi!“ – viel Spaß beim Pilgern!',
-                  style: TextStyle(fontSize: 18, height: 1.6, color: Color(0xFF4A3728)),
-                  textAlign: TextAlign.center,
+              ),
+
+              // Inhalt mit ScrollView
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 160), // Platz für Titel-PNG
+
+                      // ================== SPIELREGELN ==================
+                      const Text('Spielregeln', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF4A3728))),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Konpira fune fune ist ein traditionelles japanisches Trinkspiel aus Shikoku, basierend auf dem Pilgerlied zum Kotohira-gū-Schrein (Konpira-san).\n\n'
+                        'Zwei Spieler klopfen abwechselnd auf Tisch oder Schale im Rhythmus des Gesangs – wer das Timing verpasst oder falsch klopft, verliert!\n\n'
+                        'In Konpira:\n'
+                        '• Ein-Finger-Tap → tok / pon\n'
+                        '• Zwei-Finger-Double-Tap → DON!\n'
+                        '• Pinch / LongPress → Schale hochheben + Fake-Out (max. 2x)\n\n'
+                        'Der Verlierer trinkt die Schale Matcha leer – oder wird gezwungen! 🍵\n\n'
+                        '„Hoi-hoi!“ – viel Spaß beim Pilgern!',
+                        style: TextStyle(fontSize: 18, height: 1.6, color: Color(0xFF4A3728)),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+
+                      // ================== INFOS ZUM LIED ==================
+                      const Text('Infos zum Lied', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF4A3728))),
+                      const SizedBox(height: 16),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset('assets/images/tempel_tafel.jpg', height: 300, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        '„Konpira fune fune“ ist ein uraltes Pilgerlied (vor 1900), das jeder Japaner kennt. Es wurde von Pilgern gesungen, die zum Kotohira-gū-Schrein auf dem Elefanten-Kopf-Berg wollten.\n\n'
+                        'Der Text erzählt von der Reise, Wind und Dankbarkeit – und ist bis heute lebendiges Kulturgut.\n\n'
+                        'Diese App trägt dieses wichtige Stück japanischer Tradition in die Welt – damit die Teezeremonie und das Lied nie vergessen werden.',
+                        style: TextStyle(fontSize: 18, height: 1.6, color: Color(0xFF4A3728)),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+
+                      // ================== TEE-ZEREMONIE ==================
+                      const Text('Tee-Zeremonie', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF4A3728))),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Die japanische Teezeremonie (Chanoyu) ist eine der höchsten Formen der Gastfreundschaft. Geiko und Maiko in Kyoto spielen Konpira fune fune traditionell mit Gästen – ein Zeichen von Vertrauen und Freude.\n\n'
+                        'Dieses Spiel ist nicht nur Spaß – es ist lebendiges Kulturgut, das Achtsamkeit, Rhythmus und Gemeinschaft feiert.\n\n'
+                        'Mit Konpira bringen wir dieses Erbe auf dein Handy – damit die Welt die Schönheit der japanischen Kultur neu entdeckt.',
+                        style: TextStyle(fontSize: 18, height: 1.6, color: Color(0xFF4A3728)),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 80),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 60),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

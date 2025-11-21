@@ -19,35 +19,47 @@ class CreditsScreen extends ConsumerWidget {
         centerTitle: true,
       ),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(theme.paperAsset),  // <<< LIVE WECHSEL: Paper-Textur aus Theme!
-            fit: BoxFit.cover,
-            opacity: 0.6,
-          ),
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF5F0E1), Color(0xFFE8DAB2)],
+  decoration: BoxDecoration(
+    image: DecorationImage(
+      image: AssetImage(theme.paperAsset),
+      fit: BoxFit.cover,
+      opacity: 0.6,
+    ),
+    gradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFF5F0E1), Color(0xFFE8DAB2)],
+    ),
+  ),
+  child: SafeArea(
+    child: Stack(
+      children: [
+        // <<< Titel-PNG absolut oben – exakt wie auf HomeScreen (top: -20 = unter AppBar!)
+        Positioned(
+          top: -56,  // <<< schiebt es hoch – passt perfekt unter die AppBar!
+          left: 0,
+          right: 0,
+          child: Image.asset(
+            'assets/images/konpira_title.png',
+            height: 180,
+            fit: BoxFit.contain,
           ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
+
+        // Credits-Text zentriert, mit etwas mehr Platz oben (wegen Titel-PNG)
+        Padding(
+          padding: const EdgeInsets.all(32),
+          child: SingleChildScrollView(  // <<< Overflow fixxed!
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Made with ❤️ und viel Matcha',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF4A3728)),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 80),  // Platz für Titel-PNG
                 const Text(
                   'Idee, Design & Code:\nZiegelbrenner29\n\n'
                   'Inspiration:\nKonpira fune fune – das echte Pilgerlied aus Shikoku\n\n'
                   'Danke an alle Teemeister, die mich zum Lachen gebracht haben! 🍵\n\n'
-                  'Version 1.0 – 2025',
+                  'Version 1.0 – 2025\n\n'
+                  '© wienold-it – Alle Rechte vorbehalten.',
                   style: TextStyle(fontSize: 18, height: 1.8, color: Color(0xFF4A3728)),
                   textAlign: TextAlign.center,
                 ),
@@ -60,7 +72,10 @@ class CreditsScreen extends ConsumerWidget {
             ),
           ),
         ),
-      ),
+      ],
+    ),
+  ),
+),
     );
   }
 }

@@ -50,35 +50,41 @@ class GameNotifier extends StateNotifier<GameState> {
     return diff <= timingWindowMs;
   }
 
-  // === BGM START / STOP ===
-  Future<void> startMusic(String variant) async {
-  if (_bgmPlayer.playing) return;  // verhindert doppeltes Abspielen
 
-  final String asset;
-  if (variant == 'konpira') {
-    asset = 'assets/audio/konpira_fune_fune.mp3';
-  } else if (variant == 'matchapon') {
-    asset = 'assets/audio/matcha_pon.mp3';  // später hinzufügen
-  } else {
-    debugPrint('🎶 Unbekannte Variante: $variant – keine Musik!');
-    return;
-  }
+
+// In GameNotifier – startMusic() komplett ersetzen
+Future<void> startMusic(String variant) async {
+  if (_bgmPlayer.playing) return;
 
   try {
-    await _bgmPlayer.setAsset(asset);
+    await _bgmPlayer.setAsset('assets/audio/konpira_fune_fune.mp3');
     await _bgmPlayer.setLoopMode(LoopMode.one);
-    final volume = ref.read(settingsProvider).bgmVolume;
-    await _bgmPlayer.setVolume(volume.clamp(0.0, 1.0));
+
+    // LIVE UPDATE: Master-Volume wirkt sofort + bei jeder Änderung!
+    _updateBgmVolume();  // Erstmal setzen
+    ref.listen(settingsProvider, (previous, next) {
+      if (previous?.masterVolume != next.masterVolume) {
+        _updateBgmVolume();
+      }
+    });
+
     await _bgmPlayer.play();
-    debugPrint('🎶 $variant gestartet – Asset: $asset, Volume: $volume');
+    debugPrint('🎶 Konpira gestartet – Master-Volume wirkt live!');
   } catch (e) {
-    debugPrint('BGM Fehler ($variant): $e');
+    debugPrint('BGM Fehler: $e');
   }
 }
 
-  Future<void> stopMusic() async {
-    await _bgmPlayer.stop();
-  }
+// _updateBgmVolume() – NUR Master-Volume für Gesang!
+void _updateBgmVolume() {
+  final settings = ref.read(settingsProvider);
+  final effectiveVolume = settings.masterVolume;  // <<< NUR Master!
+  _bgmPlayer.setVolume(effectiveVolume.clamp(0.0, 1.0));
+}
+
+Future<void> stopMusic() async {
+  await _bgmPlayer.stop();
+}
 
   // === GESTEN ===
   void onSingleTap(bool isBowlZone, bool isPlayer1Area) async {

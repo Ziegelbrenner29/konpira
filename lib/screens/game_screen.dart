@@ -1,40 +1,31 @@
 // lib/screens/game_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:konpira/providers/game_provider.dart';
-import 'package:konpira/providers/beat_engine_provider.dart';
-import 'package:konpira/models/game_state.dart';
 import 'package:konpira/widgets/chawan_widget.dart';
-import 'package:konpira/widgets/player_indicator.dart';
-import 'package:konpira/core/constants.dart';
-import 'package:konpira/providers/settings_provider.dart';  // <<< NEU: für theme.paperAsset!
+import 'package:konpira/providers/settings_provider.dart';
+import 'package:konpira/models/game_state.dart';
 
-class GameScreen extends ConsumerWidget {
-  final String variant;
-  final bool isVsKI;
-
-  const GameScreen({required this.variant, required this.isVsKI, super.key});
+class GameScreen extends ConsumerStatefulWidget {
+  const GameScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final gameState = ref.watch(gameProvider);
-    final size = MediaQuery.of(context).size;
-    final theme = ref.watch(settingsProvider).theme;  // <<< LIVE THEME!
+  ConsumerState<GameScreen> createState() => _GameScreenState();
+}
 
-    // Musik + Beat starten automatisch
-    ref.listen<GameState>(gameProvider, (previous, next) {
-      if (next.phase == GamePhase.waitingForTapOnBowl && next.winner.isEmpty) {
-        debugPrint('🎶 GameScreen: waitingForTapOnBowl erkannt – Variant: $variant');
-        ref.read(beatEngineProvider).start(variant);
-        ref.read(gameProvider.notifier).startMusic(variant);
-      }
-    });
+class _GameScreenState extends ConsumerState<GameScreen> {
+  String debugText = 'Bereit – teste Gesten!';
+  double lastContactSize = 0.0;  // ✅ double statt Size!
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final theme = ref.watch(settingsProvider).theme;
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(theme.paperAsset),  // <<< Paper-Textur aus Theme!
+            image: AssetImage(theme.paperAsset),
             fit: BoxFit.cover,
             opacity: 0.6,
           ),
@@ -44,94 +35,81 @@ class GameScreen extends ConsumerWidget {
             colors: [Color(0xFFF5F0E1), Color(0xFFE8DAB2)],
           ),
         ),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (d) => _handleTap(d.localPosition, size, ref, false),
-          onDoubleTapDown: (d) => _handleTap(d.localPosition, size, ref, true),
-          onLongPressStart: (d) => _handleLongPress(d.localPosition, size, ref),
-          onScaleStart: (_) => _handleScaleStart(ref),
-          onScaleUpdate: (d) => _handleScaleUpdate(d, ref),
-          onScaleEnd: (_) => _handleScaleEnd(ref),
-          child: Stack(
-            children: [
-              ChawanWidget(state: gameState),  // wechselt schon live!
-              const PlayerIndicator(isUpper: true),
-              const PlayerIndicator(isUpper: false),
-              if (gameState.phase == GamePhase.gameOver)
+        child: Listener(
+          onPointerDown: (event) {
+            lastContactSize = event.size;  // ✅ Jetzt passt's
+            debugText = 'Pointer Down\nFläche: ${lastContactSize.round()} px²\nFinger: 1';
+            setState(() {});
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (d) {
+              debugText = 'Single Tap\nFläche ≈ ${lastContactSize.round()} px²\nZone: ${_getZone(d.localPosition, size)}';
+              setState(() {});
+            },
+            onDoubleTapDown: (d) {
+              debugText = 'Double Tap – DON!\nFläche ≈ ${lastContactSize.round()} px²';
+              setState(() {});
+            },
+            onLongPressStart: (d) {
+              debugText = 'LongPress Start\nSchale hochheben';
+              setState(() {});
+            },
+            onScaleStart: (_) {
+              debugText = 'Pinch Start\nSchale hochheben';
+              setState(() {});
+            },
+            onScaleUpdate: (d) {
+              final fakeOut = d.scale > 1.1 ? 'Fake-Out!' : '';
+              debugText = 'Pinch Update\nScale: ${d.scale.toStringAsFixed(2)}\n$fakeOut';
+              setState(() {});
+            },
+            onScaleEnd: (_) {
+              debugText = 'Pinch End\nEhrlich abstellen';
+              setState(() {});
+            },
+            child: Stack(
+              children: [
+                // Nur die Chawan – groß & mittig
                 Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        gameState.winner == 'player1' ? 'Du gewinnst!' : 'Verloren!',
-                        style: const TextStyle(fontSize: 64, color: Color(0xFF4A3728), fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 40),
-                      ElevatedButton(
-                        onPressed: () {
-                          ref.read(gameProvider.notifier).reset();
-                          ref.read(beatEngineProvider).start(variant);
-                        },
-                        child: const Text('Nochmal!', style: TextStyle(fontSize: 32)),
-                      ),
-                    ],
+                  child: ChawanWidget(state: const GameState(
+                    phase: GamePhase.waitingForTapOnBowl,
+                    isPlayer1Turn: true,
+                    bowlOwner: BowlOwner.none,
+                    fakeCount: 0,
+                    winner: '',
+                  )),
+                ),
+
+                // Debug-Overlay
+                Positioned(
+                  top: 100,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      debugText,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      textAlign: TextAlign.right,
+                    ),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  HitZone _getZone(Offset pos, Size size) {
+  String _getZone(Offset pos, Size size) {
     final y = pos.dy / size.height;
-    if (y < upperHandZoneRatio) return HitZone.upperHand;
-    if (y > 1 - lowerHandZoneRatio) return HitZone.lowerHand;
-    return HitZone.bowl;
-  }
-
-  void _handleTap(Offset pos, Size size, WidgetRef ref, bool isDouble) {
-    final zone = _getZone(pos, size);
-    final isPlayer1Area = zone == HitZone.lowerHand;
-
-    if (isDouble && zone == HitZone.bowl) {
-      ref.read(gameProvider.notifier).onDoubleTapMiddle();
-    } else if (!isDouble) {
-      final isBowlZone = zone == HitZone.bowl;
-      ref.read(gameProvider.notifier).onSingleTap(isBowlZone, isPlayer1Area);
-    }
-  }
-
-  void _handleLongPress(Offset pos, Size size, WidgetRef ref) {
-    final zone = _getZone(pos, size);
-    if (zone != HitZone.bowl) return;
-    final state = ref.read(gameProvider);
-    if (state.phase == GamePhase.waitingForTapOnBowl || state.phase == GamePhase.waitingForTapOnHand) {
-      ref.read(gameProvider.notifier).onLiftBowl(state.isPlayer1Turn);
-    }
-  }
-
-  void _handleScaleStart(WidgetRef ref) {
-    final state = ref.read(gameProvider);
-    if (state.phase == GamePhase.waitingForTapOnBowl || state.phase == GamePhase.waitingForTapOnHand) {
-      ref.read(gameProvider.notifier).onLiftBowl(state.isPlayer1Turn);
-    }
-  }
-
-  void _handleScaleUpdate(ScaleUpdateDetails details, WidgetRef ref) {
-    final state = ref.read(gameProvider);
-    if (state.phase == GamePhase.bowlTakenWaitingForOwnerDecision && details.scale > 1.1) {
-      ref.read(gameProvider.notifier).onOwnerDecisionFake();
-    }
-  }
-
-  void _handleScaleEnd(WidgetRef ref) {
-    final state = ref.read(gameProvider);
-    if (state.phase == GamePhase.bowlTakenWaitingForOwnerDecision) {
-      ref.read(gameProvider.notifier).onOwnerDecisionRelease();
-    }
+    if (y < 0.3) return 'Oberer Bereich';
+    if (y > 0.7) return 'Unterer Bereich';
+    return 'Mitte (Schale)';
   }
 }
-
-enum HitZone { upperHand, bowl, lowerHand }

@@ -59,16 +59,17 @@ flutter:
 
 # ====== SPLASH SCREEN – Beige Zen mit Tempel-Siegel! ✨======
 flutter_native_splash:
-  color: "#F5F0E1"
-  image: assets/images/konpira_splash.png
-  fullscreen: true
-  android_gravity: center
-  ios_content_mode: center  # Geändert von scaleToFill zu center
-  
+  color: "#F5F0E1"                         # Beige Hintergrund
+  image: assets/images/konpira_splash.png  # Dein Tempel-PNG
+  fullscreen: true                         # Kein Statusbar-Blitz
+  android_gravity: center                  # Zentriert dein PNG perfekt!
+  # branding: ...                          # <<< KOMPLETT WEG – kein Branding!
   android_12:
     image: assets/images/konpira_splash.png
     color: "#F5F0E1"
-    
+    # branding: ...                        # <<< AUCH HIER WEG!
+  ios_content_mode: scaleToFill
+
 # ====== APP ICON – golden shimmer 茶 ✨======
 flutter_launcher_icons:
   android: "launcher_icon"
