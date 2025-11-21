@@ -1,12 +1,12 @@
 // lib/widgets/chawan_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:matcha/models/game_state.dart';
-import 'package:matcha/providers/game_provider.dart';  // <-- Korrigierter Import!
+import 'package:matcha/models/game_state.dart';  // GameState statt MatchaGameState
+import 'package:matcha/providers/game_provider.dart';
 import 'package:matcha/core/constants.dart';
 
 class ChawanWidget extends ConsumerWidget {
-  final MatchaGameState state;
+  final GameState state;  // <<< HIER WAR'S! MatchaGameState → GameState
 
   const ChawanWidget({required this.state, super.key});
 
@@ -57,19 +57,11 @@ class ChawanWidget extends ConsumerWidget {
         child: AnimatedRotation(
           turns: rotation / 360,
           duration: const Duration(milliseconds: 400),
-          child: GestureDetector(
-            onScaleStart: (state.phase == GamePhase.waitingForTapOnBowl || state.phase == GamePhase.waitingForTapOnHand)
-                ? (_) => ref.read(gameProvider.notifier).onLiftBowl(state.isPlayer1Turn)
-                : null,
-            onLongPressStart: (state.phase == GamePhase.waitingForTapOnBowl || state.phase == GamePhase.waitingForTapOnHand)
-                ? (_) => ref.read(gameProvider.notifier).onLiftBowl(state.isPlayer1Turn)
-                : null,
-            child: Image.asset(
-              'assets/images/chawan.png',
-              width: bowlSize,
-              height: bowlSize,
-              fit: BoxFit.contain,
-            ),
+          child: Image.asset(
+            'assets/images/chawan.png',
+            width: bowlSize,
+            height: bowlSize,
+            fit: BoxFit.contain,
           ),
         ),
       ),

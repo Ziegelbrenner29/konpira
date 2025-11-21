@@ -1,5 +1,6 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';   // <<< NEU: für Test-Button
 import 'package:matcha/screens/game_screen.dart';
 import 'package:matcha/screens/settings_screen.dart';
 import 'package:matcha/screens/info_screen.dart';
@@ -40,6 +41,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _splitController.reverse().then((_) => setState(() => _selectedVariant = null));
   }
 
+  // === TEST-BUTTON: Spielt Konpira fune fune sofort ab (Volume 1.0, looped) ===
+  void _testKonpiraMusic() async {
+    final player = AudioPlayer();
+    try {
+      await player.setAsset('assets/audio/konpira_fune_fune.mp3');
+      await player.setLoopMode(LoopMode.one);
+      await player.setVolume(1.0);
+      await player.play();
+      debugPrint('🎶 Test-Konpira gestartet – hörst du den Shamisen?');
+    } catch (e) {
+      debugPrint('Test-Fehler: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,6 +87,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildVariantButton('Konpira fune fune', 'konpira'),
                     const SizedBox(height: 40),
                     _buildVariantButton('Matcha pon!', 'matchapon'),
+
+                    // === TEST-BUTTON (nur zum Debuggen – später wieder löschen!) ===
+                    const SizedBox(height: 60),
+                    ElevatedButton(
+                      onPressed: _testKonpiraMusic,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      ),
+                      child: const Text(
+                        '🔊 Test Konpira Gesang',
+                        style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -138,7 +168,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _splitHalf(String text, bool isLeft, String variant) {
     final progress = _splitAnimation.value;
-    final width = 180.0 + (progress * 60);
+
+    final double baseWidth = 160.0;
+    final double extra = progress * 40.0;
+    final double maxAvailable = (MediaQuery.of(context).size.width - 80) / 2;
+    final double width = (baseWidth + extra).clamp(0.0, maxAvailable);
 
     return GestureDetector(
       onTap: () => _startGame(context, isLeft),
@@ -149,12 +183,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: Container(
           width: width,
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
           color: Color.lerp(const Color(0xFFBC9F7A), const Color(0xFF8B6F47), isLeft ? 0.0 : progress),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.w600),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 22,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
       ),

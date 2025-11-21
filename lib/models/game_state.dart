@@ -1,40 +1,49 @@
 // lib/models/game_state.dart
+
 enum GamePhase {
-  waitingForTapOnBowl,        // Erwartet Tippen auf Schale
-  waitingForTapOnHand,        // Erwartet Tippen auf eigene Hand
-  bowlTakenWaitingForKnock,   // Schale weg → Gegner muss klopfen
-  bowlTakenWaitingForOwnerDecision, // Gegner hat richtig geklopft → Fake oder ehrlich?
+  waitingForTapOnBowl,
+  waitingForTapOnHand,
+  bowlTakenWaitingForKnock,
+  bowlTakenWaitingForOwnerDecision,
   gameOver,
 }
 
 enum BowlOwner { none, player1, player2OrKI }
 
-class MatchaGameState {
+class GameState {
   final GamePhase phase;
+  final bool isPlayer1Turn;
   final BowlOwner bowlOwner;
-  final bool isPlayer1Turn;     // wer ist gerade dran
-  final int fakeCount;          // wie viele Fakes in Folge
-  final String winner;          // 'player1', 'player2', 'ki' oder ''
+  final int fakeCount;
+  final String winner;
 
-  MatchaGameState({
+  const GameState({
     required this.phase,
-    this.bowlOwner = BowlOwner.none,
-    this.isPlayer1Turn = true,
-    this.fakeCount = 0,
-    this.winner = '',
+    required this.isPlayer1Turn,
+    required this.bowlOwner,
+    required this.fakeCount,
+    required this.winner,
   });
 
-  MatchaGameState copyWith({
+  factory GameState.initial() => const GameState(
+        phase: GamePhase.waitingForTapOnBowl,
+        isPlayer1Turn: true,
+        bowlOwner: BowlOwner.none,
+        fakeCount: 0,
+        winner: '',
+      );
+
+  GameState copyWith({
     GamePhase? phase,
-    BowlOwner? bowlOwner,
     bool? isPlayer1Turn,
+    BowlOwner? bowlOwner,
     int? fakeCount,
     String? winner,
   }) {
-    return MatchaGameState(
+    return GameState(
       phase: phase ?? this.phase,
-      bowlOwner: bowlOwner ?? this.bowlOwner,
       isPlayer1Turn: isPlayer1Turn ?? this.isPlayer1Turn,
+      bowlOwner: bowlOwner ?? this.bowlOwner,
       fakeCount: fakeCount ?? this.fakeCount,
       winner: winner ?? this.winner,
     );

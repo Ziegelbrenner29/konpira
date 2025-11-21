@@ -2,69 +2,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:matcha/providers/game_provider.dart';
+import 'package:matcha/providers/beat_engine_provider.dart';
 import 'package:matcha/models/game_state.dart';
-import 'package:matcha/services/beat_engine.dart';
 import 'package:matcha/widgets/chawan_widget.dart';
-import 'package:matcha/widgets/zen_background.dart';
 import 'package:matcha/widgets/player_indicator.dart';
 import 'package:matcha/core/constants.dart';
 
 class GameScreen extends ConsumerWidget {
   final String variant;
-  final bool isVsKI;  // <-- NEU: true = Solo vs KI, false = Hot-Seat 2-Spieler
+  final bool isVsKI;
 
-  const GameScreen({
-    required this.variant,
-    required this.isVsKI,
-    super.key,
-  });
+  const GameScreen({required this.variant, required this.isVsKI, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameProvider);
     final size = MediaQuery.of(context).size;
 
-    // Beat-Engine nur starten, wenn Spiel wirklich beginnt
-    ref.listen(gameProvider, (_, state) {
-      if (state.phase == GamePhase.waitingForTapOnBowl && state.winner.isEmpty) {
-        ref.read(beatEngineProvider).start(variant);
-      }
-    });
-
-    // KI-Modus-Info ans GameProvider weitergeben (für spätere KI-Logik)
-    // Wir setzen es einmal beim Start – später erweitern wir den Provider
-    //if (gameState.phase == GamePhase.waitingForTapOnBowl && gameState.winner.isEmpty) {
-    //  ref.read(gameProvider.notifier).setGameMode(isVsKI);
-    //}
+    // <<< TYPISIERTER LISTEN – jetzt 100% zuverlässig! Musik + Beat starten automatisch
+    ref.listen<GameState>(gameProvider, (previous, next) {
+  if (next.phase == GamePhase.waitingForTapOnBowl && next.winner.isEmpty) {
+    debugPrint('🎶 GameScreen: waitingForTapOnBowl erkannt – Variant: $variant');
+    ref.read(beatEngineProvider).start(variant);
+    ref.read(gameProvider.notifier).startMusic(variant);
+  }
+});
 
     return Scaffold(
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTapDown: (details) => _handleTap(details.localPosition, size, ref, false),
-        onDoubleTapDown: (details) => _handleTap(details.localPosition, size, ref, true),
-        onLongPressStart: (details) => _handleLongPress(details.localPosition, size, ref),
+        onTapDown: (d) => _handleTap(d.localPosition, size, ref, false),
+        onDoubleTapDown: (d) => _handleTap(d.localPosition, size, ref, true),
+        onLongPressStart: (d) => _handleLongPress(d.localPosition, size, ref),
         onScaleStart: (_) => _handleScaleStart(ref),
-        onScaleUpdate: (details) => _handleScaleUpdate(details, ref),
+        onScaleUpdate: (d) => _handleScaleUpdate(d, ref),
         onScaleEnd: (_) => _handleScaleEnd(ref),
         child: Stack(
           children: [
-            const ZenBackground(),
+            Container(color: const Color(0xFFF5F0E1)),
             ChawanWidget(state: gameState),
-            PlayerIndicator(isUpper: true),
-            PlayerIndicator(isUpper: false),
+            const PlayerIndicator(isUpper: true),
+            const PlayerIndicator(isUpper: false),
             if (gameState.phase == GamePhase.gameOver)
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      gameState.winner == 'Du' ? 'Du gewinnst!' : 'Verloren!',
-                      style: const TextStyle(fontSize: 64, color: Colors.brown, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      isVsKI ? 'Zen-Meister war stärker...' : 'Dein Freund hat dich reingelegt!',
-                      style: const TextStyle(fontSize: 24, color: Colors.brown),
+                      gameState.winner == 'player1' ? 'Du gewinnst!' : 'Verloren!',
+                      style: const TextStyle(fontSize: 64, color: Color(0xFF4A3728), fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 40),
                     ElevatedButton(

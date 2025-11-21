@@ -31,16 +31,20 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   flutter_native_splash: ^2.4.1
-  flutter_launcher_icons: ^0.14.1   # <<< NEU: für unser goldenes 茶-Icon!
+  flutter_launcher_icons: ^0.14.1
+  freezed_annotation: ^2.4.1
+  freezed: ^2.4.7
+  build_runner: ^2.4.12
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/audio/
-    - assets/images/
+    - assets/images/          # matcha_splash.png + evtl. andere
     - assets/rive/
-    - assets/icons/                  # <<< NEU: unser Icon-Ordner
+    - assets/icons/           # goldenes 茶-Icon
+    - assets/images/themes/   # <<< NEU: alle 6 Theme-Texturen auf einen Schlag!
 
   # Zen-Fonts – auskommentiert, bis du die TTFs wirklich reinlegst
   # fonts:
@@ -53,28 +57,18 @@ flutter:
   #     fonts:
   #       - asset: assets/fonts/NotoSansJP-Regular.ttf
 
-# ====== SPLASH SCREEN – jetzt mit deinem eigenen Bild! ✨======
-# ====== SPLASH SCREEN – jetzt 100% korrekt und zen! ✨======
-# ====== SPLASH SCREEN – jetzt mit deinem matcha_splash.png, full & zen! ✨======
+# ====== SPLASH SCREEN – full zen perfection! ✨======
 flutter_native_splash:
-  color: "#F5F0E1"                       # cremiges Beige (unser HomeScreen-Start)
-  image: assets/images/matcha_splash.png # dein eigenes Bild, zentriert
-
-  # Fullscreen-Modus: Bild füllt alles (kein App-Icon mehr, kein Statusbar-Overlay)
-  fullscreen: true                       
-
-  # Android (vor 12): Bild fillt den Screen
-  android_gravity: fill                  
-
-  # Android 12+
+  color: "#F5F0E1"
+  image: assets/images/matcha_splash.png
+  fullscreen: true
+  android_gravity: fill
   android_12:
     image: assets/images/matcha_splash.png
     color: "#F5F0E1"
+  ios_content_mode: scaleToFill
 
-  # iOS: Content-Mode fill (seit neueren Versionen der richtige Weg)
-  ios_content_mode: scaleToFill          
-
-# ====== APP ICON KONFIG – das macht den goldenen Zauber! ✨======
+# ====== APP ICON – golden shimmer 茶 ✨======
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
