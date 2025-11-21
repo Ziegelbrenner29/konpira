@@ -57,17 +57,18 @@ flutter:
   #     fonts:
   #       - asset: assets/fonts/NotoSansJP-Regular.ttf
 
-# ====== SPLASH SCREEN – full zen perfection! ✨======
+# ====== SPLASH SCREEN – Beige Zen mit Tempel-Siegel! ✨======
 flutter_native_splash:
   color: "#F5F0E1"
   image: assets/images/konpira_splash.png
   fullscreen: true
-  android_gravity: fill
+  android_gravity: center
+  ios_content_mode: center  # Geändert von scaleToFill zu center
+  
   android_12:
     image: assets/images/konpira_splash.png
     color: "#F5F0E1"
-  ios_content_mode: scaleToFill
-
+    
 # ====== APP ICON – golden shimmer 茶 ✨======
 flutter_launcher_icons:
   android: "launcher_icon"

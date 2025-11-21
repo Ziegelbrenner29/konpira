@@ -13,7 +13,7 @@ class ChawanWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
-    final bowlSize = size.width * 0.25;
+    final bowlSize = size.width * 0.75;
 
     final centerX = size.width / 2;
     final centerY = size.height / 2;
