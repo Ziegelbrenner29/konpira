@@ -1,9 +1,11 @@
 // lib/screens/settings_screen.dart
+// ────────  KONPIRA SETTINGS – 22.11.2025 FINAL + ORIGINALGETREU  ────────
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:konpira/providers/settings_provider.dart';
 import 'package:konpira/providers/game_provider.dart';
-import 'package:konpira/providers/bgm_provider.dart'; 
+import 'package:konpira/providers/bgm_provider.dart';
 
 final _testMusicPlayingProvider = StateProvider<bool>((ref) => false);
 
@@ -13,6 +15,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
+    final notifier = ref.read(settingsProvider.notifier);
 
     // ★★★★★ LIVE LAUTSTÄRKE FÜR BGM – ECHTZEIT! ★★★★★
     ref.listen<double>(settingsProvider.select((s) => s.masterVolume), (previous, next) {
@@ -24,8 +27,7 @@ class SettingsScreen extends ConsumerWidget {
       final masterVol = ref.read(settingsProvider).masterVolume;
       ref.read(bgmProvider).updateVolume(masterVol * next);
     });
-    
-    final notifier = ref.read(settingsProvider.notifier);
+
     final isPlaying = ref.watch(_testMusicPlayingProvider);
 
     return PopScope(
@@ -59,11 +61,11 @@ class SettingsScreen extends ConsumerWidget {
           child: SafeArea(
             child: Stack(
               children: [
-                // ★★★★★ DER WUNDERSCHÖNE TITEL GANZ OBEN – WIE AUF HOME! ★★★★★
+                // ★★★★★ DER WUNDERSCHÖNE TITEL GANZ OBEN ★★★★★
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 0), // etwas Abstand zum AppBar
+                    padding: const EdgeInsets.only(top: 0),
                     child: Image.asset(
                       'assets/images/konpira_title.png',
                       height: 80,
@@ -72,15 +74,16 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
 
-                // Der Rest scrollt darunter – perfekt!
+                // Scrollbereich
                 Padding(
-                  padding: const EdgeInsets.only(top: 80), // Platz für den Titel lassen
+                  padding: const EdgeInsets.only(top: 80),
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _sectionTitle('Audio'),
+
                         _bambooSlider(
                           label: 'Master Lautstärke',
                           value: settings.masterVolume,
@@ -136,6 +139,59 @@ class SettingsScreen extends ConsumerWidget {
 
                         const SizedBox(height: 32),
                         _sectionTitle('Gameplay'),
+
+                        // ★★★★★ NEU: PvP Sitzposition ★★★★★
+                        const Text('Spieler-Anordnung (PvP)', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
+                        const SizedBox(height: 8),
+                        SegmentedButton<bool>(
+                          segments: const [
+                            ButtonSegment(value: true, label: Text('Gegenüber'), icon: Icon(Icons.people)),
+                            ButtonSegment(value: false, label: Text('Nebeneinander'), icon: Icon(Icons.event_seat)),
+                          ],
+                          selected: {settings.playersFaceEachOther},
+                          onSelectionChanged: (set) => notifier.updatePlayersFaceEachOther(set.first),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Max Fake-Outs – original max 3!
+                        const Text('Max Fake-Outs in Folge', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
+                        const SizedBox(height: 8),
+                        SegmentedButton<int>(
+                          segments: const [
+                            ButtonSegment(value: 1, label: Text('1')),
+                            ButtonSegment(value: 2, label: Text('2')),
+                            ButtonSegment(value: 3, label: Text('3')),
+                          ],
+                          selected: {settings.maxFakesInARow.clamp(1, 3)},
+                          onSelectionChanged: (set) => notifier.updateMaxFakesInARow(set.first),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Schwierigkeitsstufe
+                        const Text('Schwierigkeitsstufe', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
+                        const SizedBox(height: 8),
+                        SegmentedButton<GameDifficulty>(
+                          segments: const [
+                            ButtonSegment(value: GameDifficulty.easy, label: Text('Easy')),
+                            ButtonSegment(value: GameDifficulty.normal, label: Text('Normal')),
+                            ButtonSegment(value: GameDifficulty.hard, label: Text('Hard')),
+                          ],
+                          selected: {settings.gameDifficulty},
+                          onSelectionChanged: (set) => notifier.updateGameDifficulty(set.first),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Speed-Up pro Runde
+                        SwitchListTile(
+                          title: const Text('Beschleunigung pro Runde', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
+                          subtitle: const Text('Startet bei gewählter Stufe und wird immer schneller – Chaos-Zen!'),
+                          value: settings.speedUpPerRound,
+                          activeColor: const Color(0xFF8B9F7A),
+                          onChanged: notifier.updateSpeedUpPerRound,
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Timing-Fenster
                         _bambooSliderInt(
                           label: 'Timing-Fenster (±ms)',
                           value: settings.timingWindowMs.toDouble(),
@@ -144,13 +200,14 @@ class SettingsScreen extends ConsumerWidget {
                           divisions: 7,
                           onChanged: (v) => notifier.updateTimingWindowMs(v.round()),
                         ),
-                        _segmentedFakes(notifier, settings.maxFakesInARow),
+
+                        // KI Platzhalter
                         _aiDifficultyPlaceholder(settings.aiDifficulty),
 
                         const SizedBox(height: 32),
                         _sectionTitle('Visuals'),
 
-                        // Theme-Wechsler (unverändert – perfekt!)
+                        // Theme-Wechsler
                         ...AppTheme.values.map((theme) {
                           final isSelected = settings.theme == theme;
                           final icon = switch (theme) {
@@ -203,7 +260,7 @@ class SettingsScreen extends ConsumerWidget {
                         }),
 
                         _bambooSlider(
-                          label: 'Animations-Intensität',
+                          label: 'animations-Intensität',
                           value: settings.animationIntensity,
                           onChanged: notifier.updateAnimationIntensity,
                         ),
@@ -228,17 +285,17 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  // ─────── HILFSWIDGETS ───────
   Widget _sectionTitle(String title) => Padding(
-        padding: const EdgeInsets.only(bottom: 16, top: 24),
-        child: Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF4A3728))),
+        padding: const EdgeInsets.only(top: 32, bottom: 16),
+        child: Text(title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF4A3728))),
       );
 
   Widget _bambooSlider({
     required String label,
     required double value,
     required void Function(double) onChanged,
-  }) =>
-      _SliderTile(label: label, value: value, onChanged: onChanged);
+  }) => _SliderTile(label: label, value: value, onChanged: onChanged);
 
   Widget _bambooSliderInt({
     required String label,
@@ -248,8 +305,7 @@ class SettingsScreen extends ConsumerWidget {
     required int divisions,
     List<String>? labels,
     required void Function(double) onChanged,
-  }) =>
-      _SliderTile(
+  }) => _SliderTile(
         label: label,
         value: value,
         min: min,
@@ -257,39 +313,6 @@ class SettingsScreen extends ConsumerWidget {
         divisions: divisions,
         labels: labels,
         onChanged: onChanged,
-      );
-
-  Widget _switchTile({
-    required String title,
-    required bool value,
-    required void Function(bool) onChanged,
-  }) =>
-      ListTile(
-        title: Text(title, style: const TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
-        trailing: Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF8B9F7A)),
-      );
-
-  Widget _segmentedFakes(SettingsNotifier notifier, int current) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Max Fake-Outs in Folge', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
-            const SizedBox(height: 8),
-            SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 1, label: Text('1')),
-                ButtonSegment(value: 2, label: Text('2')),
-                ButtonSegment(value: 99, label: Text('∞')),
-              ],
-              selected: {current == 99 ? 99 : current},
-              onSelectionChanged: (Set<int> newSelection) {
-                final val = newSelection.first;
-                notifier.updateMaxFakesInARow(val == 99 ? 99 : val);
-              },
-            ),
-          ],
-        ),
       );
 
   Widget _aiDifficultyPlaceholder(int value) => Opacity(
