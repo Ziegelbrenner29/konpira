@@ -11,7 +11,7 @@ class HighscoreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(settingsProvider).theme;
-    final bool isLocal = true; // ← später Riverpod-State für Toggle
+    const bool isLocal = true; // ← später Riverpod-State für Toggle
 
     return Scaffold(
       body: Container(
@@ -44,7 +44,7 @@ class HighscoreScreen extends ConsumerWidget {
 
               // Toggle Local / Global – KORREKTE PARAMETER!
               ToggleButtons(
-                isSelected: [isLocal, !isLocal],
+                isSelected: const [isLocal, !isLocal],
                 onPressed: (index) {
                   // später: ref.read(highscoreModeProvider.notifier).state = index == 0;
                 },
@@ -66,7 +66,7 @@ class HighscoreScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: const Color(0xE6FFFFFF),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
                     ),
@@ -80,7 +80,7 @@ class HighscoreScreen extends ConsumerWidget {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('9999', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const Text('9999', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                               const SizedBox(width: 16),
                               Text('Zen-Meister', style: TextStyle(fontSize: 16, color: Colors.green.shade700)),
                             ],

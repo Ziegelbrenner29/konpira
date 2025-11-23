@@ -1,5 +1,6 @@
 // lib/providers/bgm_provider.dart  ← komplett so überschreiben!
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'settings_provider.dart';  // ← dein Provider mit AppTheme
@@ -29,16 +30,17 @@ class BgmPlayer {
       await _player.setVolume(volume);
       if (!_isGameScreen) await _player.play();
     } catch (e) {
-      print('BGM Error: $e');
+      debugPrint('BGM Error: $e');
     }
   }
 
   Future<void> setGameScreen(bool isActive) async {
+    _isGameScreen = isActive;
     if (isActive) {
       await _player.pause();                 // sofort leise im Spiel
     } else {
       await updateThemeAndPlayIfAllowed();   // wieder an + richtiges Theme
-    }
+    } 
   }
   
   Future<void> updateVolume(double volume) async {

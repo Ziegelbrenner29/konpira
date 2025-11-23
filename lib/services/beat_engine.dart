@@ -36,77 +36,89 @@ class BeatState {
 class BeatEngine extends ChangeNotifier {
   BeatState _state = BeatState.initial();
   Timer? _beatTimer;
-  bool _disposed = false;  // ← NEU: Disposed-Flag
+  bool _disposed = false;
 
   void Function()? onBeat;
 
   BeatState get state => _state;
 
-  void start(int bpm) {
+  // ★★★★★ UMGEBAUT: Akzeptiert jetzt einen optionalen Offset ★★★★★
+  void start(int bpm, {Duration offset = Duration.zero}) {
     _beatTimer?.cancel();
-    
+
     final intervalMs = (60000 / bpm).round();
-    
+    final interval = Duration(milliseconds: intervalMs);
+
     _state = BeatState(
       currentBpm: bpm,
       beatCount: 0,
       isRunning: true,
     );
-    
-    _safeNotifyListeners();  // ← Sichere Variante
-    debugPrint('🥁 BeatEngine gestartet: $bpm BPM (${intervalMs}ms Intervall)');
+    _safeNotifyListeners();
+    debugPrint('🥁 BeatEngine will start: $bpm BPM with offset ${offset.inMilliseconds}ms');
 
-    _beatTimer = Timer.periodic(
-      Duration(milliseconds: intervalMs),
-      (_) {
-        if (_disposed) {  // ← Prüfe ob disposed
-          _beatTimer?.cancel();
-          return;
-        }
-        
-        _state = _state.copyWith(beatCount: _state.beatCount + 1);
-        _safeNotifyListeners();  // ← Sichere Variante
-        onBeat?.call();
-        debugPrint('🥁 Beat #${_state.beatCount} @ ${_state.currentBpm} BPM');
-      },
-    );
+    // Timer für den initialen Offset
+    _beatTimer = Timer(offset, () {
+      if (_disposed) return;
+
+      // Ersten Beat sofort auslösen
+      _state = _state.copyWith(beatCount: 1);
+      _safeNotifyListeners();
+      onBeat?.call();
+      debugPrint('🥁 Beat #${_state.beatCount} @ ${_state.currentBpm} BPM (first beat after offset)');
+
+      // Periodischen Timer für alle folgenden Beats starten
+      _beatTimer = Timer.periodic(
+        interval,
+        (_) {
+          if (_disposed) {
+            _beatTimer?.cancel();
+            return;
+          }
+
+          _state = _state.copyWith(beatCount: _state.beatCount + 1);
+          _safeNotifyListeners();
+          onBeat?.call();
+          // debugPrint('🥁 Beat #${_state.beatCount} @ ${_state.currentBpm} BPM'); // Optional: für weniger Lärm auskommentieren
+        },
+      );
+    });
   }
 
   void updateBpm(int newBpm) {
     if (!_state.isRunning || _disposed) return;
-    
+
     final intervalMs = (60000 / newBpm).round();
-    
+
     _state = _state.copyWith(currentBpm: newBpm);
-    _safeNotifyListeners();  // ← Sichere Variante
-    
+    _safeNotifyListeners();
+
     _beatTimer?.cancel();
     _beatTimer = Timer.periodic(
       Duration(milliseconds: intervalMs),
       (_) {
-        if (_disposed) {  // ← Prüfe ob disposed
+        if (_disposed) {
           _beatTimer?.cancel();
           return;
         }
-        
+
         _state = _state.copyWith(beatCount: _state.beatCount + 1);
-        _safeNotifyListeners();  // ← Sichere Variante
+        _safeNotifyListeners();
         onBeat?.call();
         debugPrint('🥁 Beat #${_state.beatCount} @ ${_state.currentBpm} BPM');
       },
     );
-    
+
     debugPrint('⚡ BeatEngine Speed-Up: $newBpm BPM (${intervalMs}ms)');
   }
 
   void stop() {
     _beatTimer?.cancel();
     _state = _state.copyWith(isRunning: false);
-    _safeNotifyListeners();  // ← Sichere Variante
+    _safeNotifyListeners();
     debugPrint('🛑 BeatEngine gestoppt');
   }
 
-  // ★★★★★ SICHERE notifyListeners() - ruft nur auf wenn nicht disposed ★★★★★
   void _safeNotifyListeners() {
     if (!_disposed && hasListeners) {
       notifyListeners();
@@ -115,7 +127,7 @@ class BeatEngine extends ChangeNotifier {
 
   @override
   void dispose() {
-    _disposed = true;  // ← Markiere als disposed
+    _disposed = true;
     _beatTimer?.cancel();
     super.dispose();
     debugPrint('🗑️ BeatEngine disposed');

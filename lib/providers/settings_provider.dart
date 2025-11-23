@@ -149,7 +149,7 @@ class AppSettings {
 
 // SettingsNotifier
 class SettingsNotifier extends StateNotifier<AppSettings> {
-  SettingsNotifier(AppSettings initial) : super(initial);
+  SettingsNotifier(super.initial);
 
   static Future<SettingsNotifier> create() async {
     final savedJson = await PersistenceService.loadAll();

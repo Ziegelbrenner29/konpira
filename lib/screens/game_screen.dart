@@ -33,12 +33,16 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
 
     ref.read(gameProvider.notifier).startKonpiraSong();
   }
+  
+  void _handleScreenExit() {
+    ref.read(gameProvider.notifier).stopKonpiraSong();
+    ref.read(bgmProvider).setGameScreen(false);
+  }
 
   @override
   void dispose() {
     _pulseController.dispose();
-    ref.read(gameProvider.notifier).stopKonpiraSong();
-    ref.read(bgmProvider).setGameScreen(false);
+    _handleScreenExit();
     super.dispose();
   }
 
@@ -69,10 +73,9 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
     final currentBpm = beatEngineState.currentBpm;
 
     return PopScope(
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) {
         if (didPop) {
-          ref.read(gameProvider.notifier).stopKonpiraSong();
-          await ref.read(bgmProvider).setGameScreen(false);
+          _handleScreenExit();
         }
       },
       child: Scaffold(
@@ -133,11 +136,11 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
                     child: Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: const Color(0xB2000000),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
-                        'Spieler 1:\nTippe im Takt um zu starten',
+                        'Spieler 1:\\nTippe im Takt um zu starten',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
@@ -179,11 +182,11 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.8),
+                      color: const Color(0xCC000000),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'Kontakt: ${lastContactSize.round()} px²',
+                      'Kontakt: \${lastContactSize.round()} px²',
                       style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
@@ -241,7 +244,7 @@ class _PlayerTurnIndicator extends StatelessWidget {
                     height: indicatorSize,
                     decoration: BoxDecoration(
                       boxShadow: isActive
-                          ? [BoxShadow(color: Colors.white.withOpacity(0.6), blurRadius: 20, spreadRadius: 5)]
+                          ? [const BoxShadow(color: Color(0x99FFFFFF), blurRadius: 20, spreadRadius: 5)]
                           : null,
                     ),
                     child: Image.asset(
@@ -327,11 +330,11 @@ class _BeatPulseIndicatorState extends State<BeatPulseIndicator>
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF4A3728).withOpacity(0.95),
+                color: const Color(0xF24A3728),
                 border: Border.all(color: const Color(0xFF8B9F7A), width: 5),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B9F7A).withOpacity(glowOpacity),
+                    color: const Color(0xFF8B9F7A).withAlpha((glowOpacity * 255).round()),
                     blurRadius: 30,
                     spreadRadius: 10,
                   ),
@@ -339,7 +342,7 @@ class _BeatPulseIndicatorState extends State<BeatPulseIndicator>
               ),
               child: Center(
                 child: Text(
-                  '${widget.bpm}\nBPM',
+                  '\${widget.bpm}\\nBPM',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,

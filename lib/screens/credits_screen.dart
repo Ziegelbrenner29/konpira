@@ -64,9 +64,9 @@ class CreditsScreen extends ConsumerWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 60),
-                      Text(
+                      const Text(
                         'Namaste & いただきます！',
-                        style: TextStyle(fontSize: 24, fontStyle: FontStyle.italic, color: Color(0xFF4A3728).withOpacity(0.8)),
+                        style: TextStyle(fontSize: 24, fontStyle: FontStyle.italic, color: Color(0xCC4A3728)),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 80),

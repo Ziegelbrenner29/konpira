@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:konpira/screens/home_screen.dart';
 import 'package:konpira/providers/bgm_provider.dart';
 import 'package:konpira/providers/settings_provider.dart';   // ← wichtig!
-import 'package:konpira/services/persistence_service.dart'; // ← die neue Datei
 
 final routeObserver = RouteObserver<ModalRoute<void>>();
 

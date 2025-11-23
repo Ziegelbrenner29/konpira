@@ -186,7 +186,7 @@ class SettingsScreen extends ConsumerWidget {
                           title: const Text('Beschleunigung pro Runde', style: TextStyle(fontSize: 18, color: Color(0xFF4A3728))),
                           subtitle: const Text('Startet bei gewählter Stufe und wird immer schneller – Chaos-Zen!'),
                           value: settings.speedUpPerRound,
-                          activeColor: const Color(0xFF8B9F7A),
+                          activeTrackColor: const Color(0xFF8B9F7A),
                           onChanged: notifier.updateSpeedUpPerRound,
                         ),
                         const SizedBox(height: 24),
@@ -284,7 +284,7 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                           ),
                           value: settings.debugMode,
-                          activeColor: Colors.greenAccent.shade700,
+                          activeTrackColor: Colors.greenAccent.shade700,
                           onChanged: notifier.updateDebugMode,
                         ),
 
@@ -398,14 +398,14 @@ class _SliderTile extends StatelessWidget {
           Stack(
             alignment: Alignment.centerLeft,
             children: [
-              Container(height: 12, color: const Color(0xFF8B9F7A).withOpacity(0.3)),
+              Container(height: 12, color: const Color(0x4D8B9F7A)),
               SliderTheme(
                 data: SliderThemeData(
                   trackHeight: 12,
                   thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16),
                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 28),
                   activeTrackColor: const Color(0xFF8B9F7A),
-                  inactiveTrackColor: const Color(0xFF8B9F7A).withOpacity(0.3),
+                  inactiveTrackColor: const Color(0x4D8B9F7A),
                   thumbColor: const Color(0xFF4A3728),
                 ),
                 child: Slider(

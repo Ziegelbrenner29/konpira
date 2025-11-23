@@ -25,16 +25,17 @@ class GameNotifier extends StateNotifier<GameState> {
   final Ref ref;
   DateTime? _lastBeatTime;
   int _expectedTapType = 0;
-  bool _isVsKI = false;
 
   Timer? _speedUpTimer;
   double _currentSpeed = 1.0; // Start-Speed
 
+  // ★★★★★ NEU: Feste BPM und manueller Offset für perfekte Synchronisation ★★★★★
+  static const int baseBpm = 105;
+  static const Duration beatOffset = Duration.zero; // <-- HIER den Offset anpassen, z.B. Duration(milliseconds: 50)
+
   GameNotifier(this.ref) : super(GameState.initial()) {
     ref.read(beatEngineProvider).onBeat = _onBeat;
   }
-
-  void setGameMode(bool isVsKI) => _isVsKI = isVsKI;
 
   void _onBeat() {
     _lastBeatTime = DateTime.now();
@@ -54,45 +55,39 @@ class GameNotifier extends StateNotifier<GameState> {
     }
   }
 
-  bool _isInTimingWindow() {
-    if (_lastBeatTime == null) return false;
-    final diff = DateTime.now().difference(_lastBeatTime!).inMilliseconds.abs();
-    return diff <= ref.read(settingsProvider).timingWindowMs;
-  }
-
   // ★★★★★ KONPIRA FUNE FUNE LIED + BEATENGINE START! ★★★★★
-Future<void> startKonpiraSong() async {
-  try {
-    final settings = ref.read(settingsProvider);
-    _currentSpeed = settings.gameDifficulty.speedMultiplier;
+  Future<void> startKonpiraSong() async {
+    try {
+      final settings = ref.read(settingsProvider);
+      _currentSpeed = settings.gameDifficulty.speedMultiplier;
 
-    await _konpiraSongPlayer.setAsset(soundKonpira);
-    await _konpiraSongPlayer.setLoopMode(LoopMode.one);
-    await _konpiraSongPlayer.setVolume(settings.masterVolume * settings.bgmVolume);
-    await _konpiraSongPlayer.setSpeed(_currentSpeed);
-    _konpiraSongPlayer.play();  // ← OHNE await!
+      await _konpiraSongPlayer.setAsset(soundKonpira);
+      await _konpiraSongPlayer.setLoopMode(LoopMode.one);
+      await _konpiraSongPlayer.setVolume(settings.masterVolume * settings.bgmVolume);
+      await _konpiraSongPlayer.setSpeed(_currentSpeed);
+      _konpiraSongPlayer.play(); // ← OHNE await!
 
-    // ★★★★★ BeatEngine STARTEN (nicht nur BPM updaten!) ★★★★★
-    final currentBpm = (92 * _currentSpeed).round();
-    ref.read(beatEngineProvider).start(currentBpm);  // ← .start() statt .updateBpm()!
+      // ★★★★★ BeatEngine STARTEN mit festen BPM + Offset ★★★★★
+      final currentBpm = (baseBpm * _currentSpeed).round();
+      ref.read(beatEngineProvider).start(currentBpm, offset: beatOffset);
 
-    // Speed-Up-Timer starten (wenn aktiviert)
-    _speedUpTimer?.cancel();
-    if (settings.speedUpPerRound) {
-      _speedUpTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-        _currentSpeed += 0.1;
-        _konpiraSongPlayer.setSpeed(_currentSpeed);
-        final newBpm = (92 * _currentSpeed).round();
-        ref.read(beatEngineProvider).updateBpm(newBpm);  // ← Hier .updateBpm() OK!
-        debugPrint('⚡ Chaos-Zen! Speed-Up auf $_currentSpeed → $newBpm BPM');
-      });
+      // Speed-Up-Timer starten (wenn aktiviert)
+      _speedUpTimer?.cancel();
+      if (settings.speedUpPerRound) {
+        _speedUpTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+          _currentSpeed += 0.1;
+          _konpiraSongPlayer.setSpeed(_currentSpeed);
+          final newBpm = (baseBpm * _currentSpeed).round(); // <-- Auch hier die baseBpm verwenden
+          ref.read(beatEngineProvider).updateBpm(newBpm);
+          debugPrint('⚡ Chaos-Zen! Speed-Up auf $_currentSpeed → $newBpm BPM');
+        });
+      }
+
+      debugPrint('🎶 Konpira gestartet: Speed $_currentSpeed → $currentBpm BPM!');
+    } catch (e, stack) {
+      debugPrint('❌ Start Fehler: $e\n$stack');
     }
-
-    debugPrint('🎶 Konpira gestartet: Speed $_currentSpeed → $currentBpm BPM!');
-  } catch (e, stack) {
-    debugPrint('❌ Start Fehler: $e\n$stack');
   }
-}
 
   Future<void> stopKonpiraSong() async {
     _speedUpTimer?.cancel();
@@ -121,14 +116,14 @@ Future<void> startKonpiraSong() async {
   // GESTEN + GAMEOVER + RESET wie vorher
 
   // In GameNotifier – _playSfx wieder hinzufügen!
-Future<void> _playSfx(String asset) async {
-  try {
-    await _sfxPlayer.setAsset(asset);
-    await _sfxPlayer.play();
-  } catch (e) {
-    debugPrint('SFX Error: $e');
+  Future<void> _playSfx(String asset) async {
+    try {
+      await _sfxPlayer.setAsset(asset);
+      await _sfxPlayer.play();
+    } catch (e) {
+      debugPrint('SFX Error: $e');
+    }
   }
-}
 
   void onSingleTap(bool isBowlZone, bool isPlayer1Area) async {
     if (state.phase == GamePhase.warmUp) {

@@ -1,5 +1,4 @@
 // lib/core/constants.dart
-import 'package:flutter/material.dart';
 
 const double timingWindowMs = 80.0;         // ±80ms wie im echten Spiel
 const Duration fakeTouchDuration = Duration(milliseconds: 300); // Fake-Berührung

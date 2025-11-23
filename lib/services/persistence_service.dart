@@ -1,7 +1,8 @@
 // lib/services/persistence_service.dart
-// ────────  KONPIRA PERSISTENCE – 22.11.2025 FINAL & KOMPILIEREND  ────────
+// ────────  KONPIRA PERSISTENCE – 22.11.2025 FINAL & KOMPILIEREND!  ────────
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:konpira/providers/settings_provider.dart';
 
@@ -26,7 +27,7 @@ class PersistenceService {
       try {
         return jsonDecode(jsonString) as Map<String, dynamic>;
       } catch (e) {
-        print('Corrupted JSON – falling back to legacy');
+        debugPrint('Corrupted JSON – falling back to legacy');
       }
     }
 

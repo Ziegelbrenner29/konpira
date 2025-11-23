@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B9F7A).withOpacity(0.8),
+                            color: const Color(0xCC8B9F7A),
                             borderRadius: BorderRadius.circular(30),
                             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
                           ),
@@ -127,9 +127,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               color: Colors.black87,
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(color: Colors.greenAccent, width: 2),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
-                                  color: Colors.greenAccent.withOpacity(0.5),
+                                  color: Color(0x8069F0AE),
                                   blurRadius: 12,
                                   spreadRadius: 2,
                                 ),
@@ -221,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _splitHalf(String text, bool isLeft, String variant) {
     final progress = _splitAnimation.value;
 
-    final double baseWidth = 160.0;
+    const double baseWidth = 160.0;
     final double extra = progress * 40.0;
     final double maxAvailable = (MediaQuery.of(context).size.width - 80) / 2;
     final double width = (baseWidth + extra).clamp(0.0, maxAvailable);
@@ -274,7 +274,7 @@ class _FooterIcon extends StatelessWidget {
           color: Color(0x33BC9F7A),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 32, color: Color(0xFF4A3728)),
+        child: Icon(icon, size: 32, color: const Color(0xFF4A3728)),
       ),
     );
   }

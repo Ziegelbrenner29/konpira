@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:konpira/providers/settings_provider.dart';
 import 'package:konpira/providers/beat_engine_provider.dart';
 import 'package:konpira/providers/game_provider.dart';
-import 'package:konpira/models/game_state.dart';
 
 class DebugScreen extends ConsumerWidget {
   const DebugScreen({super.key});
@@ -136,7 +135,7 @@ class DebugScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+              border: Border.all(color: const Color(0x4D69F0AE)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

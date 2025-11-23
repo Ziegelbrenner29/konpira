@@ -21,7 +21,7 @@ class PlayerIndicator extends ConsumerWidget {
           margin: EdgeInsets.only(top: isUpper ? 40 : 0, bottom: !isUpper ? 40 : 0),
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.brown.withOpacity(0.3),
+            color: const Color(0x4D795548),
             borderRadius: BorderRadius.circular(30),
           ),
           child: Text(
